@@ -23,7 +23,7 @@ services:
 - For `Gradle` put following to your `build.gradle` file:
 ```groovy
 dependencies {
-    compile('ru.jts.spring:spring-clickhouse-metrics:1.5.4.BUILD-SNAPSHOT')
+    compile('com.github.camelion:spring-clickhouse-metrics:1.5.4.BUILD-SNAPSHOT')
 }
 ``` 
 
