@@ -1,0 +1,45 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.4.RELEASE'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = 1.8
+version = '1.5.4.BUILD-SNAPSHOT'
+
+jar {
+    baseName = 'spring-clickhouse-metrics'
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}")
+}
+
+dependencies {
+    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.github.camelion'
+            from components.java
+
+            pom.withXml {
+                def site = asNode().appendNode('distributionManagement').appendNode('site')
+                site.appendNode('id', 'camelion.github')
+                site.appendNode('name', 'GitHub')
+                site.appendNode('url', 'https://github.com/Camelion/spring-clickhouse-metrics')
+            }
+        }
+    }
+}
