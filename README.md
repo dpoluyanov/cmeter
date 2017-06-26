@@ -1,4 +1,4 @@
-#Spring ClickHouse Metrics
+# Spring ClickHouse Metrics
 
 This artifact provides bridge between `spring-boot-actuator` metrics in spring-boot 1.5.x applications and [ClickHouse](http://clickhouse.yandex) database.
 
@@ -31,7 +31,7 @@ dependencies {
 ```xml
 <dependencies>
     <dependency>
-        <groupId>ru.jts.spring</groupId>
+        <groupId>com.github.camelion</groupId>
         <artifcatId>spring-clickhouse-metrics</artifcatId>
         <version>1.5.4.BUILD-SNAPSHOT</version>
     </dependency>
