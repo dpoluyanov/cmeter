@@ -9,10 +9,12 @@ repositories {
 }
 
 apply plugin: 'java'
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.8
-version = '1.5.4.BUILD-SNAPSHOT'
+group = "com.github.camelion"
+version = '1.5.4.RELEASE'
 
 jar {
     baseName = 'spring-clickhouse-metrics'
@@ -28,17 +30,63 @@ dependencies {
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId 'com.github.camelion'
-            from components.java
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
 
-            pom.withXml {
-                def site = asNode().appendNode('distributionManagement').appendNode('site')
-                site.appendNode('id', 'camelion.github')
-                site.appendNode('name', 'GitHub')
-                site.appendNode('url', 'https://github.com/Camelion/spring-clickhouse-metrics')
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Spring ClickHouse Metrics'
+                packaging 'jar'
+                description 'An artifact that provides ability to use Yandex.ClickHouse as spring metrics storage'
+                url 'https://github.com/Camelion/spring-clickhouse-metrics'
+
+                scm {
+                    connection 'scm:git:https://github.com/Camelion/spring-clickhouse-metrics'
+                    developerConnection 'scm:git:https://github.com/Camelion/spring-clickhouse-metrics.git'
+                    url 'https://github.com/Camelion/spring-clickhouse-metrics'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'camelion'
+                        name 'Camelion'
+                        email 'camelion.c@mail.ru'
+                    }
+                }
             }
         }
     }
