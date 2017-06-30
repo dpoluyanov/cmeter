@@ -1,33 +1,50 @@
 buildscript {
-    ext {
-        springBootVersion = '1.5.4.RELEASE'
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
-}
-
-repositories {
-    mavenCentral()
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:3.2.0"
+    }
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: "io.spring.dependency-management"
+apply plugin: "nebula.optional-base"
+
+repositories {
+    mavenCentral()
+    maven { url 'http://repo.spring.io/libs-snapshot' }
+}
+
+ext {
+    springBootVersion = '2.0.0.BUILD-SNAPSHOT'
+}
 
 sourceCompatibility = 1.8
 group = "com.github.camelion"
-version = '1.5.4.RELEASE'
+version = '2.0.0.RC1'
 
 jar {
     baseName = 'spring-clickhouse-metrics'
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
-    compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
-    compile("org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}")
+    compile "org.springframework:spring-jdbc"
+    compile "org.springframework:spring-context"
+    compile "org.springframework.boot:spring-boot:$springBootVersion", optional
+    compile 'org.springframework.metrics:spring-metrics:latest.release'
+    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.24'
 }
 
-dependencies {
-    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+dependencyManagement {
+    imports {
+        mavenBom 'io.spring.platform:platform-bom:Cairo-BUILD-SNAPSHOT'
+    }
 }
 
 task javadocJar(type: Jar) {
