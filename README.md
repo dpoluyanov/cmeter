@@ -1,6 +1,6 @@
 # Spring ClickHouse Metrics
 
-This artifact provides bridge between `spring-boot-actuator` metrics in spring-boot 1.5.x applications and [ClickHouse](http://clickhouse.yandex) database.
+This artifact provides bridge between `spring-metrics` in spring applications and [ClickHouse](http://clickhouse.yandex) database.
 
 # Getting started
 ## ClickHouse
@@ -23,7 +23,7 @@ services:
 - For `Gradle` put following to your `build.gradle` file:
 ```groovy
 dependencies {
-    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RC1')
+    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RC2')
 }
 ``` 
 
@@ -33,7 +33,7 @@ dependencies {
     <dependency>
         <groupId>com.github.camelion</groupId>
         <artifcatId>spring-clickhouse-metrics</artifcatId>
-        <version>2.0.0.RC1</version>
+        <version>2.0.0.RC2</version>
     </dependency>
 </dependencies>
 ```

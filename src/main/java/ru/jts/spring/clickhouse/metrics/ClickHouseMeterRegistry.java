@@ -5,7 +5,6 @@ import org.springframework.metrics.instrument.Timer;
 import org.springframework.metrics.instrument.internal.AbstractMeterRegistry;
 import org.springframework.metrics.instrument.internal.MapAccess;
 import org.springframework.metrics.instrument.internal.MeterId;
-import org.springframework.metrics.instrument.stats.hist.Bucket;
 import org.springframework.metrics.instrument.stats.hist.Histogram;
 import org.springframework.metrics.instrument.stats.quantile.Quantiles;
 
@@ -113,18 +112,8 @@ public class ClickHouseMeterRegistry extends AbstractMeterRegistry {
 
     private void registerHistogramCounterIfNecessary(String name, Iterable<Tag> tags, Histogram<?> histogram) {
         if (histogram != null) {
-            for (Bucket<?> b : histogram.getBuckets()) {
-                List<Tag> bucketTags = new LinkedList<>();
-                tags.forEach(bucketTags::add);
-
-                bucketTags.add(Tag.of("bucket", b.getTag(bc -> bc instanceof Double ?
-                        Double.isNaN((Double) bc) ? "NaN" : Double.toString((Double) bc) : String.valueOf(bc))));
-                bucketTags.add(Tag.of("statistic", "histogram"));
-
-                computeIfAbsent(meterMap, new MeterId(name + ".histogram", bucketTags),
-                        id -> new ClickHouseGauge<>(id, b,
-                                (ToDoubleFunction<Bucket<?>>) Bucket::getValue));
-            }
+            computeIfAbsent(meterMap, new MeterId(name + ".histogram", tags),
+                    id -> new ClickHouseHistogram(id, histogram));
         }
     }
 }
