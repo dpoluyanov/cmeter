@@ -27,7 +27,7 @@ ext {
 
 sourceCompatibility = 1.8
 group = "com.github.camelion"
-version = '2.0.0.RC2'
+version = '2.0.0.RC3'
 
 jar {
     baseName = 'spring-clickhouse-metrics'

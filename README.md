@@ -23,7 +23,7 @@ services:
 - For `Gradle` put following to your `build.gradle` file:
 ```groovy
 dependencies {
-    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RC2')
+    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RC3')
 }
 ``` 
 
@@ -33,7 +33,7 @@ dependencies {
     <dependency>
         <groupId>com.github.camelion</groupId>
         <artifcatId>spring-clickhouse-metrics</artifcatId>
-        <version>2.0.0.RC2</version>
+        <version>2.0.0.RC3</version>
     </dependency>
 </dependencies>
 ```

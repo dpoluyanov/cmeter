@@ -10,6 +10,10 @@ import ru.jts.spring.clickhouse.metrics.ClickHouseMetricWriter;
 import ru.yandex.clickhouse.ClickHouseDataSource;
 import ru.yandex.clickhouse.settings.ClickHouseProperties;
 
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 /**
  * @author Camelion
  * @since 27.06.17
@@ -35,7 +39,8 @@ public class ClickHouseMetricConfiguration {
 
         return new ClickHouseMetricWriter(
                 clickHouseMeterRegistry,
-                new ClickHouseDataSource(clickhouseUrl, clickHouseProperties),
+                new ClickHouseDataSource(clickhouseUrl, clickHouseProperties)
+                        .withConnectionsCleaning(5, SECONDS),
                 tablify(clickhouseTable), instanceId);
     }
 
