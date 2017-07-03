@@ -46,6 +46,7 @@ public class ClickHouseMetricWriter implements InitializingBean {
                 " timestamp DateTime DEFAULT now(),\n" +
                 " instance_id String,\n" +
                 " metric String,\n" +
+                " tags Array(String),\n" +
                 " value Float64\n" +
                 ") ENGINE = MergeTree(partition, (timestamp, metric, instance_id), 8192)");
     }
@@ -70,7 +71,7 @@ public class ClickHouseMetricWriter implements InitializingBean {
         }
 
         List<Object[]> batchArgs = batch.stream()
-                .map(m -> new Object[]{instanceId, toMetric(m.getName(), m.getTags()), m.getValue()})
+                .map(m -> new Object[]{instanceId, m.getName(), toTagsArray(m.getTags()), m.getValue()})
                 .collect(Collectors.toList());
 
         if (log.isTraceEnabled()) {
@@ -80,13 +81,13 @@ public class ClickHouseMetricWriter implements InitializingBean {
         }
 
         clickHouseJdbcTemplate.batchUpdate(
-                "INSERT INTO " + tableName + " (instance_id, metric, value)\n" +
-                        "VALUES(?, ?, ?)", batchArgs);
+                "INSERT INTO " + tableName + " (instance_id, metric, tags, value)\n" +
+                        "VALUES(?, ?, ?, ?)", batchArgs);
     }
 
-    private String toMetric(String name, Set<Tag> tags) {
-        return Stream.concat(Stream.of(name),
-                tags.stream().flatMap(tag -> Stream.of(tag.getKey(), tag.getValue())))
-                .collect(Collectors.joining("."));
+    private String[] toTagsArray(Set<Tag> tags) {
+        return tags.stream()
+                .flatMap(tag -> Stream.of(tag.getKey(), tag.getValue()))
+                .toArray(String[]::new);
     }
 }
