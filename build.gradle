@@ -27,18 +27,18 @@ ext {
 
 sourceCompatibility = 1.8
 group = "com.github.camelion"
-version = '2.0.0.RC3'
+version = '2.0.0.RELEASE'
 
 jar {
     baseName = 'spring-clickhouse-metrics'
 }
 
 dependencies {
+    compile "org.springframework:spring-beans"
     compile "org.springframework:spring-jdbc"
-    compile "org.springframework:spring-context"
     compile "org.springframework.boot:spring-boot:$springBootVersion", optional
     compile 'org.springframework.metrics:spring-metrics:latest.release'
-    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.24'
+    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.25'
 }
 
 dependencyManagement {

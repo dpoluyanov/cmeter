@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="license" pattern="src[spring-clickhouse-metrics_main]:*..*" />
+</component>

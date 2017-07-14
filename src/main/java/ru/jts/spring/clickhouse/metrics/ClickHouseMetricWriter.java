@@ -1,38 +1,63 @@
+/*
+ * Copyright 2017 JTS-Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.jts.spring.clickhouse.metrics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.metrics.instrument.Measurement;
 import org.springframework.metrics.instrument.Tag;
-import org.springframework.scheduling.annotation.Scheduled;
 import ru.yandex.clickhouse.ClickHouseDataSource;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * @author Camelion
  * @since 22.06.17
  */
-public class ClickHouseMetricWriter implements InitializingBean {
+public class ClickHouseMetricWriter implements InitializingBean, DisposableBean {
     private static final Logger log = LoggerFactory.getLogger(ClickHouseMetricWriter.class);
     private final ClickHouseMeterRegistry clickHouseMeterRegistry;
     private final String tableName;
     private final String instanceId;
     private final JdbcTemplate clickHouseJdbcTemplate;
+    private final Long metricsStep;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private volatile ScheduledFuture<?> metricsDelivery;
 
     public ClickHouseMetricWriter(ClickHouseMeterRegistry clickHouseMeterRegistry,
                                   ClickHouseDataSource clickHouseDataSource,
-                                  String tableName, String instanceId) {
+                                  String tableName, String instanceId,
+                                  Long metricsStep) {
         this.clickHouseMeterRegistry = clickHouseMeterRegistry;
         this.tableName = tableName;
         this.instanceId = instanceId;
         this.clickHouseJdbcTemplate = new JdbcTemplate(clickHouseDataSource);
+        this.metricsStep = metricsStep;
     }
 
     @Override
@@ -46,13 +71,19 @@ public class ClickHouseMetricWriter implements InitializingBean {
                 " timestamp DateTime DEFAULT now(),\n" +
                 " instance_id String,\n" +
                 " metric String,\n" +
-                " tags Array(String),\n" +
+                " tags Nested\n" +
+                " (\n" +
+                "   key String,\n" +
+                "   value String\n" +
+                " ),\n" +
                 " value Float64\n" +
-                ") ENGINE = MergeTree(partition, (timestamp, metric, instance_id), 8192)");
+                ") ENGINE = MergeTree(partition, (timestamp, metric, tags.key, tags.value, instance_id), 8192)");
+
+        metricsDelivery = scheduledExecutorService
+                .scheduleAtFixedRate(this::sendMetrics, metricsStep, metricsStep, TimeUnit.MILLISECONDS);
     }
 
-    @Scheduled(fixedRateString = "${clickhouse.metrics.step:5000}")
-    public void sendMetrics() {
+    private void sendMetrics() {
         List<Measurement> batch = clickHouseMeterRegistry.getMeters()
                 .parallelStream()
                 .flatMap(meter -> StreamSupport.stream(meter.measure().spliterator(), false))
@@ -71,7 +102,10 @@ public class ClickHouseMetricWriter implements InitializingBean {
         }
 
         List<Object[]> batchArgs = batch.stream()
-                .map(m -> new Object[]{instanceId, m.getName(), toTagsArray(m.getTags()), m.getValue()})
+                .map(m -> {
+                    Map<String, String> tags = toTagsMap(m.getTags());
+                    return new Object[]{instanceId, m.getName(), tags.keySet(), tags.values(), m.getValue()};
+                })
                 .collect(Collectors.toList());
 
         if (log.isTraceEnabled()) {
@@ -81,13 +115,20 @@ public class ClickHouseMetricWriter implements InitializingBean {
         }
 
         clickHouseJdbcTemplate.batchUpdate(
-                "INSERT INTO " + tableName + " (instance_id, metric, tags, value)\n" +
-                        "VALUES(?, ?, ?, ?)", batchArgs);
+                "INSERT INTO " + tableName + " (instance_id, metric, tags.key, tags.value, value)\n" +
+                        "VALUES(?, ?, ?, ?, ?)", batchArgs);
     }
 
-    private String[] toTagsArray(Set<Tag> tags) {
+    private Map<String, String> toTagsMap(Set<Tag> tags) {
         return tags.stream()
-                .flatMap(tag -> Stream.of(tag.getKey(), tag.getValue()))
-                .toArray(String[]::new);
+                .collect(Collectors.toMap(Tag::getKey, Tag::getValue));
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (metricsDelivery != null) {
+            metricsDelivery.cancel(true);
+        }
+        scheduledExecutorService.shutdownNow();
     }
 }

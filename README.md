@@ -4,7 +4,7 @@ This artifact provides bridge between `spring-metrics` in spring applications an
 
 # Getting started
 ## ClickHouse
-It's easy to start clickhouse database via docker:
+It's easy to start ClickHouse database via docker:
 ```bash
 docker run --name=clickhouse -p 8123:8123 yandex/clickhouse-server
 ```
@@ -23,7 +23,7 @@ services:
 - For `Gradle` put following to your `build.gradle` file:
 ```groovy
 dependencies {
-    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RC3')
+    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RELEASE')
 }
 ``` 
 
@@ -33,7 +33,7 @@ dependencies {
     <dependency>
         <groupId>com.github.camelion</groupId>
         <artifcatId>spring-clickhouse-metrics</artifcatId>
-        <version>2.0.0.RC3</version>
+        <version>2.0.0.RELEASE</version>
     </dependency>
 </dependencies>
 ```
@@ -48,7 +48,7 @@ clickhouse:
     password: ""
 ```
 
-Additionally you can configure clickhouse table that would store your metric and provide instance-id for your application as follow:
+Additionally you can configure ClickHouse table that would store your metric and provide instance-id for your application as follow:
 `application.yml`
 
 ```yaml
@@ -64,9 +64,9 @@ And last but not least is configuration of metrics measurement rate
 clickhouse.metrics.step=10000
 ```
 
-That's all, `spring-clickhouse-metrics` will create necessary tables on next application launch, and then you can register all metrics with `MeterRegistry`, provided by `spring-metrics` module
+That's all, `spring-clickhouse-metrics` will create necessary tables on next application launch and then you can register all metrics with `MeterRegistry` provided by `spring-metrics` module
 
-Than you can use ClickHouse as backend datasource for [Grafana](https://grafana.com) in conjunction with [clickhouse-datasource plugin](https://github.com/Vertamedia/clickhouse-grafana) provided by [Vertamedia](https://github.com/Vertamedia).
+Than you can setup ClickHouse as backend datasource for [Grafana](https://grafana.com) in conjunction with [clickhouse-datasource plugin](https://github.com/Vertamedia/clickhouse-grafana) provided by [Vertamedia](https://github.com/Vertamedia).
 
 Simple example:
 ![grafana screen](https://github.com/Camelion/spring-clickhouse-metrics/blob/master/grafana.jpg)
