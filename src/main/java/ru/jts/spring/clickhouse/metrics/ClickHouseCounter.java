@@ -21,20 +21,31 @@ import org.springframework.metrics.instrument.Measurement;
 import org.springframework.metrics.instrument.Tag;
 import org.springframework.metrics.instrument.internal.MeterId;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.DoubleAdder;
 
 /**
  * @author Camelion
  * @since 27.06.17
+ * Note: Counter additionally returns count_sample since last measure
  */
 public class ClickHouseCounter implements Counter {
-    private final MeterId id;
+    private static final Tag TYPE_TAG = Tag.of("type", String.valueOf(Type.Counter));
+    private static final Tag STATISTIC_COUNT_TAG = Tag.of("statistic", "count");
+    private static final Tag STATISTIC_COUNT_SAMPLE_TAG = Tag.of("statistic", "count_sample");
+
+    private final MeterId originalId;
+    private final MeterId counterId;
+    private final MeterId counterSampleId;
 
     private DoubleAdder count = new DoubleAdder();
+    private volatile double lastCount;
 
     ClickHouseCounter(MeterId id) {
-        this.id = id;
+        this.originalId = id;
+        this.counterId = originalId.withTags(TYPE_TAG, STATISTIC_COUNT_TAG);
+        this.counterSampleId = originalId.withTags(TYPE_TAG, STATISTIC_COUNT_SAMPLE_TAG);
     }
 
     @Override
@@ -54,16 +65,24 @@ public class ClickHouseCounter implements Counter {
 
     @Override
     public String getName() {
-        return id.getName();
+        return originalId.getName();
     }
 
     @Override
     public Iterable<Tag> getTags() {
-        return id.getTags();
+        return originalId.getTags();
     }
 
     @Override
     public Iterable<Measurement> measure() {
-        return Collections.singleton(id.withTags(Tag.of("type", String.valueOf(getType()))).measurement(count()));
+        double cnt = count();
+
+        List<Measurement> measurements = Arrays.asList(
+                counterId.measurement(cnt),
+                counterSampleId.measurement(cnt - lastCount));
+
+        lastCount = cnt;
+
+        return measurements;
     }
 }

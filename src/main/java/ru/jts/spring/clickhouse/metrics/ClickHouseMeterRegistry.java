@@ -101,14 +101,15 @@ public class ClickHouseMeterRegistry extends AbstractMeterRegistry {
     protected Timer timer(String name, Iterable<Tag> tags, Quantiles quantiles, Histogram<?> histogram) {
         registerQuantilesGaugeIfNecessary(name, tags, quantiles);
         registerHistogramCounterIfNecessary(name, tags, histogram);
-        return computeIfAbsent(meterMap, new MeterId(name, tags), id -> new ClickHouseTimer(id, getClock()));
+        return computeIfAbsent(meterMap, new MeterId(name, tags), id -> new ClickHouseTimer(id, getClock(), quantiles, histogram));
     }
 
     @Override
     protected DistributionSummary distributionSummary(String name, Iterable<Tag> tags, Quantiles quantiles, Histogram<?> histogram) {
         registerQuantilesGaugeIfNecessary(name, tags, quantiles);
         registerHistogramCounterIfNecessary(name, tags, histogram);
-        return computeIfAbsent(meterMap, new MeterId(name, tags), ClickHouseDistributionSummary::new);
+        return computeIfAbsent(meterMap, new MeterId(name, tags),
+                id ->  new ClickHouseDistributionSummary(id, quantiles, histogram));
     }
 
     private void registerQuantilesGaugeIfNecessary(String name, Iterable<Tag> tags, Quantiles quantiles) {

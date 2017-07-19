@@ -29,22 +29,26 @@ import java.util.stream.Collectors;
  * @since 02.07.17
  */
 public class ClickHouseHistogram implements Meter {
-    private final MeterId id;
+    private final MeterId originalId;
     private final Histogram<?> histogram;
+    private final MeterId historgamId;
 
     ClickHouseHistogram(MeterId id, Histogram<?> histogram) {
-        this.id = id;
+        this.originalId = id;
+        this.historgamId = originalId.withTags(
+                Tag.of("type", String.valueOf(Type.Gauge)),
+                Tag.of("statistic", "histogram"));
         this.histogram = histogram;
     }
 
     @Override
     public String getName() {
-        return id.getName();
+        return originalId.getName();
     }
 
     @Override
     public Iterable<Tag> getTags() {
-        return id.getTags();
+        return originalId.getTags();
     }
 
     @Override
@@ -55,13 +59,11 @@ public class ClickHouseHistogram implements Meter {
     @Override
     public Iterable<Measurement> measure() {
         return histogram.getBuckets().stream()
-                .map(b -> id.withTags(
-                        Tag.of("type", "gauge"),
+                .map(b -> historgamId.withTags(
                         Tag.of("bucket", b.getTag(
                                 bc -> bc instanceof Double ?
                                         Double.isNaN((Double) bc) ? "NaN"
-                                                : Double.toString((Double) bc) : String.valueOf(bc))),
-                        Tag.of("statistic", "histogram"))
+                                                : Double.toString((Double) bc) : String.valueOf(bc))))
                         .measurement(b.getValue()))
                 .collect(Collectors.toList());
     }

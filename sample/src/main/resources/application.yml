@@ -1,0 +1,17 @@
+clickhouse:
+  datasource:
+    url: jdbc:clickhouse://localhost:8123/default
+    username: default
+    password: ""
+  metrics:
+    instance-id: default
+    step: 1000
+
+spring:
+  application:
+    name: sample-application
+
+logging:
+  level:
+    ru.yandex.clickhouse.ClickHouseDriver: warn
+

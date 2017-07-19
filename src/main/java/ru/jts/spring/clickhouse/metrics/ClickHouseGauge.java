@@ -30,33 +30,35 @@ import java.util.function.ToDoubleFunction;
  * @since 28.06.17
  */
 public class ClickHouseGauge<T> implements Gauge {
-    private final MeterId id;
+    private final MeterId originalId;
     private final WeakReference<T> obj;
     private final ToDoubleFunction<T> value;
+    private final MeterId gaugeId;
 
     ClickHouseGauge(MeterId id, T obj, ToDoubleFunction<T> value) {
-        this.id = id;
+        this.originalId = id;
+        this.gaugeId = originalId.withTags(Tag.of("type", String.valueOf(Type.Gauge)));
         this.obj = new WeakReference<>(obj);
         this.value = value;
     }
 
     @Override
-    public double value() {
-        return value.applyAsDouble(obj.get());
-    }
-
-    @Override
     public String getName() {
-        return id.getName();
+        return originalId.getName();
     }
 
     @Override
     public Iterable<Tag> getTags() {
-        return id.getTags();
+        return originalId.getTags();
     }
 
     @Override
     public Iterable<Measurement> measure() {
-        return Collections.singleton(id.withTags(Tag.of("type", String.valueOf(getType()))).measurement(value()));
+        return Collections.singleton(gaugeId.measurement(value()));
+    }
+
+    @Override
+    public double value() {
+        return value.applyAsDouble(obj.get());
     }
 }

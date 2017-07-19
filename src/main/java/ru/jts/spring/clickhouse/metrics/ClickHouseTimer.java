@@ -21,8 +21,11 @@ import org.springframework.metrics.instrument.Measurement;
 import org.springframework.metrics.instrument.Tag;
 import org.springframework.metrics.instrument.internal.AbstractTimer;
 import org.springframework.metrics.instrument.internal.MeterId;
+import org.springframework.metrics.instrument.stats.hist.Histogram;
+import org.springframework.metrics.instrument.stats.quantile.Quantiles;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -31,13 +34,31 @@ import static org.springframework.metrics.instrument.internal.TimeUtils.nanosToU
 /**
  * @author Camelion
  * @since 28.06.17
+ * Note: Measure additionally returns count_sample and amount_sample, values since last measure
  */
 public class ClickHouseTimer extends AbstractTimer {
+    private static final Tag TYPE_TAG = Tag.of("type", String.valueOf(Type.Timer));
+
+    private final MeterId countId;
+    private final MeterId amountId;
+    private final MeterId countSampleId;
+    private final MeterId amountSampleId;
+    private final Quantiles quantiles;
+    private final Histogram<?> histogram;
+
     private LongAdder count = new LongAdder();
     private LongAdder totalTime = new LongAdder();
+    private long lastCount;
+    private double lastTotalTime;
 
-    ClickHouseTimer(MeterId id, Clock clock) {
+    ClickHouseTimer(MeterId id, Clock clock, Quantiles quantiles, Histogram<?> histogram) {
         super(id, clock);
+        this.countId = id.withTags(TYPE_TAG, Tag.of("statistic", "count"));
+        this.amountId = id.withTags(TYPE_TAG, Tag.of("statistic", "amount"));
+        this.countSampleId = id.withTags(TYPE_TAG, Tag.of("statistic", "count_sample"));
+        this.amountSampleId = id.withTags(TYPE_TAG, Tag.of("statistic", "amount_sample"));
+        this.quantiles = quantiles;
+        this.histogram = histogram;
     }
 
     @Override
@@ -45,6 +66,11 @@ public class ClickHouseTimer extends AbstractTimer {
         if (amount >= 0) {
             count.increment();
             totalTime.add(TimeUnit.NANOSECONDS.convert(amount, unit));
+
+            if(quantiles != null)
+                quantiles.observe(amount);
+            if(histogram != null)
+                histogram.observe(amount);
         }
     }
 
@@ -60,9 +86,18 @@ public class ClickHouseTimer extends AbstractTimer {
 
     @Override
     public Iterable<Measurement> measure() {
-        return Arrays.asList(
-                id.withTags(Tag.of("type", String.valueOf(getType())), Tag.of("statistic", "count")).measurement(count()),
-                id.withTags(Tag.of("type", String.valueOf(getType())), Tag.of("statistic", "amount")).measurement(totalTime(TimeUnit.NANOSECONDS))
-        );
+        long cnt = count();
+        double time = totalTime(TimeUnit.NANOSECONDS);
+
+        List<Measurement> measurements = Arrays.asList(
+                countId.measurement(cnt),
+                amountId.measurement(time),
+                countSampleId.measurement(cnt - lastCount),
+                amountSampleId.measurement(time - lastTotalTime));
+
+        lastCount = cnt;
+        lastTotalTime = time;
+
+        return measurements;
     }
 }

@@ -32,13 +32,19 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 28.06.17
  */
 public class ClickHouseLongTaskTimer implements LongTaskTimer {
-    private final MeterId id;
+    private static final Tag TYPE_TAG = Tag.of("type", String.valueOf(Type.LongTaskTimer));
     private final Clock clock;
     private final ConcurrentMap<Long, Long> tasks = new ConcurrentHashMap<>();
     private final AtomicLong nextTask = new AtomicLong(0L);
 
+    private final MeterId originalId;
+    private final MeterId activeTasksId;
+    private final MeterId durationId;
+
     ClickHouseLongTaskTimer(MeterId id, Clock clock) {
-        this.id = id;
+        this.originalId = id;
+        this.activeTasksId = originalId.withTags(TYPE_TAG, Tag.of("statistic", "activeTasks"));
+        this.durationId = originalId.withTags(TYPE_TAG, Tag.of("statistic", "duration"));
         this.clock = clock;
     }
 
@@ -83,19 +89,18 @@ public class ClickHouseLongTaskTimer implements LongTaskTimer {
 
     @Override
     public String getName() {
-        return id.getName();
+        return originalId.getName();
     }
 
     @Override
     public Iterable<Tag> getTags() {
-        return id.getTags();
+        return originalId.getTags();
     }
 
     @Override
     public Iterable<Measurement> measure() {
         return Arrays.asList(
-                id.withTags(Tag.of("type", String.valueOf(getType())), Tag.of("statistic", "activeTasks")).measurement(activeTasks()),
-                id.withTags(Tag.of("type", String.valueOf(getType())), Tag.of("statistic", "duration")).measurement(duration())
-        );
+                activeTasksId.measurement(activeTasks()),
+                durationId.measurement(duration()));
     }
 }
