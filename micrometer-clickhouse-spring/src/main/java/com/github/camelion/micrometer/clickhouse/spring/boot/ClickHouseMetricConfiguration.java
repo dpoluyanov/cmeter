@@ -18,8 +18,6 @@ package com.github.camelion.micrometer.clickhouse.spring.boot;
 
 import com.github.camelion.micrometer.clickhouse.ClickHouseConfig;
 import com.github.camelion.micrometer.clickhouse.ClickHouseMeterRegistry;
-import com.netflix.spectator.api.Clock;
-import io.micrometer.core.instrument.spectator.SpectatorMeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -72,12 +70,6 @@ public class ClickHouseMetricConfiguration {
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnMissingBean
     ClickHouseMeterRegistry clickhouseMeterRegistry(ClickHouseConfig clickHouseConfig) {
-        return new ClickHouseMeterRegistry(Clock.SYSTEM, clickHouseConfig);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    SpectatorMeterRegistry meterRegistry(ClickHouseMeterRegistry clickHouseMeterRegistry) {
-        return new SpectatorMeterRegistry(clickHouseMeterRegistry);
+        return new ClickHouseMeterRegistry(clickHouseConfig);
     }
 }
