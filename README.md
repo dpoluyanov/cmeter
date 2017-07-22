@@ -1,6 +1,6 @@
-# Spring ClickHouse Metrics
+# Micrometer ClickHouse Exporter
 
-This artifact provides bridge between `spring-metrics` in spring applications and [ClickHouse](http://clickhouse.yandex) database.
+This artifact provides bridge between `micrometer` in spring applications and [ClickHouse](http://clickhouse.yandex) database.
 
 # Getting started
 ## ClickHouse
@@ -23,7 +23,7 @@ services:
 - For `Gradle` put following to your `build.gradle` file:
 ```groovy
 dependencies {
-    compile('com.github.camelion:spring-clickhouse-metrics:2.0.0.RELEASE')
+    compile('com.github.camelion:micrometer-clickhouse-exporter:0.7.0.BUILD-SNAPSHOT')
 }
 ``` 
 
@@ -32,43 +32,52 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>com.github.camelion</groupId>
-        <artifcatId>spring-clickhouse-metrics</artifcatId>
-        <version>2.0.0.RELEASE</version>
+        <artifcatId>micrometer-clickhouse-exporter</artifcatId>
+        <version>0.7.0.BUILD-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
 
-- Then configure connection properties for clickhouse server in `application.yml` or `application.properties` file using following settings 
+- Then configure connection properties and table/instance properties for clickhouse server in `application.yml` or `application.properties`  file using following settings 
 `application.yml`:
-```yaml
-clickhouse:
-  datasource:
-    url: jdbc:clickhouse://localhost:8123/default
-    username: default
-    password: ""
-```
-
-Additionally you can configure ClickHouse table that would store your metric and provide instance-id for your application as follow:
-`application.yml`
-
 ```yaml
 clickhouse:
   metrics:
     table: my_awesome_metrics_table
     instance-id: "and some instanceId"
+    datasource:
+      url: jdbc:clickhouse://localhost:8123/default
+      username: default
+      password: ""
 ```
 
 And last but not least is configuration of metrics measurement rate
 ```properties
 # interval for 10 seconds
-clickhouse.metrics.step=10000
+clickhouse.metrics.step=PT10S
 ```
 
-That's all, `spring-clickhouse-metrics` will create necessary tables on next application launch and then you can register all metrics with `MeterRegistry` provided by `spring-metrics` module
+That's all, `micrometer-clickhouse-exporter` will create necessary tables on next application launch and then you can register all metrics with `MeterRegistry` provided by `micrometer-core` module
 
 Than you can setup ClickHouse as backend datasource for [Grafana](https://grafana.com) in conjunction with [clickhouse-datasource plugin](https://github.com/Vertamedia/clickhouse-grafana) provided by [Vertamedia](https://github.com/Vertamedia).
 
 Simple example:
 ![grafana screen](https://github.com/Camelion/spring-clickhouse-metrics/blob/master/grafana.jpg)
+
+### Sample application
+Start infrastructure services (ClickHouse, Grafana) with simple `docker-compose up` command
+and go to [http://localhost:3000](http://localhost:3000) in your browser.
+
+Login as `admin/admin` into Grafana dashboard.
+
+Then start as many application from `micrometer-clickhouse-spring/src/samples` as you want (don't forget to change instance-id for every new application)
+
+And last, go to [http://localhost:3000/dashboard/db/sample-clickhouse-metrics-application?orgId=1](http://localhost:3000/dashboard/db/sample-clickhouse-metrics-application?orgId=1)
+and enjoy metrics for you application like follow:
+
+#### JVM Metrics
+![jvm metrics](https://github.com/Camelion/spring-clickhouse-metrics/blob/master/sample/jvm_metrics.png)
+####  Some application metrics
+![app metrics](https://github.com/Camelion/spring-clickhouse-metrics/blob/master/sample/app_metrics.png)
 
 **Enjoy and build better applications at easy.**

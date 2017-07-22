@@ -1,0 +1,123 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:3.2.0"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: "io.spring.dependency-management"
+apply plugin: "nebula.optional-base"
+apply plugin: 'nebula.facet'
+
+facets {
+    samples
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'http://repo.spring.io/libs-snapshot' }
+}
+
+ext {
+    springBootVersion = '2.0.0.BUILD-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+group = "com.github.camelion"
+version = '0.7.0.BUILD-SNAPSHOT'
+
+jar {
+    baseName = 'micrometer-clickhouse-spring'
+}
+
+dependencies {
+    compile project(":micrometer-clickhouse-exporter")
+    compile project(":micrometer-spring")
+
+//    compile "org.springframework:spring-beans"
+//    compile "org.springframework:spring-jdbc"
+//    compile "org.springframework.boot:spring-boot:$springBootVersion", optional
+//    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.25'
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor"
+
+    samplesCompile('org.springframework.boot:spring-boot-starter-web')
+    samplesCompile('org.springframework.boot:spring-boot-starter-aop')
+}
+
+compileJava.dependsOn(processResources)
+
+dependencyManagement {
+    imports {
+        mavenBom 'io.spring.platform:platform-bom:Cairo-BUILD-SNAPSHOT'
+    }
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Micrometer ClickHouse Spring'
+                packaging 'jar'
+                description 'An artifact that provides ability to use Yandex.ClickHouse as Micrometer metrics storage'
+                url 'https://github.com/Camelion/spring-clickhouse-metrics'
+
+                scm {
+                    connection 'scm:git:https://github.com/Camelion/spring-clickhouse-metrics'
+                    developerConnection 'scm:git:https://github.com/Camelion/spring-clickhouse-metrics.git'
+                    url 'https://github.com/Camelion/spring-clickhouse-metrics'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'camelion'
+                        name 'Camelion'
+                        email 'camelion.c@mail.ru'
+                    }
+                }
+            }
+        }
+    }
+}

@@ -62,3 +62,4 @@ fabric.properties
 *.iml
 
 gradle.properties
+docker/grafana/volume/var/lib/grafana/sessions

@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "clickhouse.metrics.datasource.url",
+      "type": "java.lang.String",
+      "description": "JDBC url for ClickHouse database.",
+      "defaultValue": "jdbc:clickhouse://localhost:8123/default"
+    }
+  ]
+}

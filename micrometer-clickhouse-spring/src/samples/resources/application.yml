@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: sample-application
+
+clickhouse:
+  metrics:
+    table: sample_application
+    instance-id: default
+    step: PT1S
+    datasource:
+      username: default
+      password: ""
+
+logging:
+  level:
+    ru.yandex.clickhouse.ClickHouseDriver: warn
+
