@@ -16,7 +16,6 @@
 
 package com.github.camelion.micrometer.clickhouse;
 
-
 import com.netflix.spectator.api.Clock;
 import com.netflix.spectator.api.Measurement;
 import com.netflix.spectator.api.Tag;
@@ -35,12 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 /**
  * @author Camelion
  * @since 27.06.17
  */
-public class ClickHouseRegistry extends AbstractStepRegistry {
+final class ClickHouseRegistry extends AbstractStepRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClickHouseRegistry.class);
 
@@ -50,7 +48,7 @@ public class ClickHouseRegistry extends AbstractStepRegistry {
     private final String instanceId;
     private Map<ClickHouseQueryParam, String> clickHouseParams;
 
-    public ClickHouseRegistry(Clock clock, ClickHouseConfig config) {
+    ClickHouseRegistry(Clock clock, ClickHouseConfig config) {
         super(clock, config);
         this.chDatasource = config.dataSource();
         this.metricsTable = config.get(config.prefix() + ".table");
@@ -78,7 +76,7 @@ public class ClickHouseRegistry extends AbstractStepRegistry {
                         " value Float64\n" +
                         ") ENGINE = MergeTree(partition, " +
                         "(timestamp, metric, tags.key, tags.value, instance_id), 8192)");
-                // TODO successful logger for created/not changed table
+                LOG.info("ClickHouse table [{}] created", metricsTable);
             } catch (SQLException e) {
                 LOG.error("Failed to create ClickHouse table [" + metricsTable + "]", e);
                 throw new RuntimeException(e);
