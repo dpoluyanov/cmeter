@@ -1,6 +1,8 @@
+include 'cmeter'
 include 'micrometer-clickhouse-exporter'
 include 'micrometer-clickhouse-spring'
 include ':micrometer-core'
 project(':micrometer-core').projectDir = new File(settingsDir, '../spring-metrics/micrometer-core')
 include ':micrometer-spring'
 project(':micrometer-spring').projectDir = new File(settingsDir, '../spring-metrics/micrometer-spring')
+

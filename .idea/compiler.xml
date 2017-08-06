@@ -2,8 +2,28 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="cmeter_jmh" target="1.8" />
+      <module name="cmeter_main" target="1.8" />
+      <module name="cmeter_test" target="1.8" />
+      <module name="micrometer-clickhouse-exporter_main" target="1.8" />
+      <module name="micrometer-clickhouse-exporter_test" target="1.8" />
+      <module name="micrometer-clickhouse-spring-starter_main" target="1.8" />
+      <module name="micrometer-clickhouse-spring-starter_test" target="1.8" />
+      <module name="micrometer-clickhouse-spring_main" target="1.8" />
+      <module name="micrometer-clickhouse-spring_samples" target="1.8" />
+      <module name="micrometer-clickhouse-spring_test" target="1.8" />
+      <module name="micrometer-core_jmh" target="1.8" />
+      <module name="micrometer-core_main" target="1.8" />
+      <module name="micrometer-core_samples" target="1.8" />
+      <module name="micrometer-core_test" target="1.8" />
+      <module name="micrometer-spring_jmh" target="1.8" />
+      <module name="micrometer-spring_main" target="1.8" />
+      <module name="micrometer-spring_samples" target="1.8" />
+      <module name="micrometer-spring_test" target="1.8" />
       <module name="spring-clickhouse-metrics_main" target="1.8" />
       <module name="spring-clickhouse-metrics_test" target="1.8" />
+      <module name="spring-metrics-micrometer-spring_main" target="1.8" />
+      <module name="spring-metrics-micrometer-spring_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
