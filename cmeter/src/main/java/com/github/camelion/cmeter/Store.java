@@ -18,9 +18,17 @@ package com.github.camelion.cmeter;
 
 /**
  * @author Camelion
- * @since 06.08.17
+ * @since 25.07.17
  */
-interface Meter {
+public abstract class Store {
+    abstract void write(long timestamp, long value);
 
-    void retain(Cursor cursor);
+    /**
+     * Name and tags pass through meters
+     *
+     * @param name   metric name
+     * @param tags   metric tags
+     * @param cursor passed cursor for given metrics
+     */
+    abstract void retain(String name, Tag[] tags, Cursor cursor);
 }

@@ -17,9 +17,8 @@
 package com.github.camelion.cmeter;
 
 
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Camelion
@@ -40,15 +39,35 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * because all directBuffers recreated with empty size
  */
 final class MetricHouse {
-    /**
-     * 8kb off-heap memory for every metric. ~ 8 MB per 1000 meters.
-     */
-    static final int BUFFER_SIZE = 128 * 1024 * 1024;
-    private final static ConcurrentHashMap<Meter, ByteBuffer> metersMap = new ConcurrentHashMap<>();
-    private final static ConcurrentLinkedQueue<Measurement> measurements = new ConcurrentLinkedQueue<>();
+    private final static List<Meter> meters = new ArrayList<>();
 
-    static <T extends Meter> T registerMeter(T meter) {
-        metersMap.computeIfAbsent(meter, m -> ByteBuffer.allocateDirect(BUFFER_SIZE));
+    static synchronized <T extends Meter> T registerMeter(T meter) {
+        meters.add(meter);
         return meter;
+    }
+
+    /**
+     * Todo:
+     * 1) Special off-heap storage for Java 9,
+     * 2) Heap storage
+     * 3) Some switch logic between them (per property based, or per meter)
+     *
+     * @return store for measurements
+     */
+    static Store createStore() {
+        return new J8_Store();
+    }
+
+    /**
+     * Probably slow reading, but it is rare, and that's normal
+     *
+     * @param cursor metrics acceptor, that consumes id and values
+     */
+    static synchronized void retain(Cursor cursor) {
+        meters.forEach(m -> m.retain(cursor));
+        // TODO Need cleaner for garbage collected metrics
+        // currently it lead to off-heap memory leak
+        // but it's not problem,
+        // because in this time there are no way to deregister meter
     }
 }

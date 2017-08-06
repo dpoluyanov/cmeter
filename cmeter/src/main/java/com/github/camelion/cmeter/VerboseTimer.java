@@ -22,14 +22,18 @@ import java.util.Objects;
 /**
  * @author Camelion
  * @since 24.07.17
+ * Registers all executions in backed store
+ * It's useful when u need accurate raw measurements in storage
  */
-class CHTimer extends CHMeter implements Timer {
+final class VerboseTimer implements Timer {
     private final String name;
     private final Tag[] tags;
+    private final Store store;
 
-    CHTimer(String name, Tag[] tags) {
+    VerboseTimer(String name, Tag[] tags) {
         this.name = name;
         this.tags = tags;
+        this.store = MetricHouse.createStore();
     }
 
     @Override
@@ -41,13 +45,18 @@ class CHTimer extends CHMeter implements Timer {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CHTimer chTimer = (CHTimer) o;
-        return Objects.equals(name, chTimer.name) &&
-                Arrays.equals(tags, chTimer.tags);
+        VerboseTimer verboseTimer = (VerboseTimer) o;
+        return Objects.equals(name, verboseTimer.name) &&
+                Arrays.equals(tags, verboseTimer.tags);
     }
 
     @Override
     public void record(long timestamp, long value) {
-        write(timestamp, value);
+        store.write(timestamp, value);
+    }
+
+    @Override
+    public void retain(Cursor cursor) {
+        store.retain(name, tags, cursor);
     }
 }

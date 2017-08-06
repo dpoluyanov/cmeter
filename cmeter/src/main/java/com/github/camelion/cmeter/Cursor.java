@@ -20,7 +20,6 @@ package com.github.camelion.cmeter;
  * @author Camelion
  * @since 06.08.17
  */
-interface Meter {
-
-    void retain(Cursor cursor);
+interface Cursor {
+    void consume(String name, Tag[] tags, long timestamp, long value);
 }

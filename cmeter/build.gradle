@@ -1,0 +1,26 @@
+apply plugin: 'me.champeau.gradle.jmh'
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+group = "com.github.camelion"
+version = '0.7.0.BUILD-SNAPSHOT'
+
+jar {
+    baseName = 'cmeter'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    jmh 'org.openjdk.jmh:jmh-core:latest.release'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
+
+    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.25'
+}
+
+jmh {
+    jmhVersion = '1.19'
+    duplicateClassesStrategy = 'warn'
+}

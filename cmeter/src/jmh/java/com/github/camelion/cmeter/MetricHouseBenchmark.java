@@ -23,6 +23,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 import static org.openjdk.jmh.annotations.Threads.MAX;
 
@@ -38,24 +39,23 @@ import static org.openjdk.jmh.annotations.Threads.MAX;
  * @author Camelion
  * @since 26.07.17
  */
-@Fork(value = 0, jvmArgs = {"-server"/*, "-XX:-RestrictContended"*/})
-@Warmup(iterations = 15)
+@Fork(value = 0, jvmArgs = {"-server", "-XX:-RestrictContended"/*, "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintAssembly"*/})
+@Warmup(iterations = 3)
 @BenchmarkMode(value = {Mode.Throughput, Mode.AverageTime})
-@org.openjdk.jmh.annotations.Measurement(iterations = 15)
+@org.openjdk.jmh.annotations.Measurement(iterations = 5)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Benchmark)
 @Threads(value = MAX)
 public class MetricHouseBenchmark {
-
-    private CHTimer meter;
+    private VerboseTimer meter;
     private Long timestamp;
     private Long value;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(MetricHouseBenchmark.class.getSimpleName())
-                .warmupIterations(15)
-                .measurementIterations(15)
+                .warmupIterations(3)
+                .measurementIterations(5)
                 .mode(Mode.Throughput).mode(Mode.AverageTime)
                 .forks(1)
                 .build();
@@ -65,7 +65,7 @@ public class MetricHouseBenchmark {
 
     @Setup
     public void setUp() {
-        meter = new CHTimer("test.timer", new Tag[0]);
+        meter = new VerboseTimer("test.timer", new Tag[0]);
         timestamp = System.nanoTime();
         value = 10L;
     }
@@ -75,10 +75,15 @@ public class MetricHouseBenchmark {
      *
      * @return
      */
-    @TearDown
+    @TearDown(Level.Iteration)
     public void tearDown() {
-        // force release memory
-//        meter.clean();
+        LongAdder counter = new LongAdder();
+        // cleanup
+        meter.retain((name, tags, timestamp, value) -> {
+            counter.increment();
+        });
+
+        System.out.println("processed: " + counter.sum() + " measures");
     }
 
     /**
@@ -93,8 +98,4 @@ public class MetricHouseBenchmark {
     public void writeMetric() {
         meter.record(timestamp, value);
     }
-//    @Benchmark
-//    public void writeMetric() {
-//        buf.putLong(0, timestamp).putLong(8, value);
-//    }
 }

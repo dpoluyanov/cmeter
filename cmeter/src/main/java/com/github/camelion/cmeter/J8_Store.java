@@ -19,14 +19,13 @@ package com.github.camelion.cmeter;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author Camelion
  * @since 30.07.17
  */
-abstract class CHMeter implements Meter {
+final class J8_Store extends Store {
     private static final Unsafe U;
     private static final long PROBE;
 
@@ -45,7 +44,7 @@ abstract class CHMeter implements Meter {
             Class<?> tk = Thread.class;
             PROBE = U.objectFieldOffset
                     (tk.getDeclaredField("threadLocalRandomProbe"));
-            Class<?> cmk = CHMeter.class;
+            Class<?> cmk = J8_Store.class;
             CELLSBUSY = U.objectFieldOffset
                     (cmk.getDeclaredField("cellsBusy"));
         } catch (Exception e) {
@@ -57,17 +56,12 @@ abstract class CHMeter implements Meter {
     private volatile BP[] bps;
     private volatile int cellsBusy;
 
-    CHMeter() {
+    J8_Store() {
         bp = new BP(U.allocateMemory(RESIZE_STEP), RESIZE_STEP);
     }
 
-    public Measurement measure() {
-        ByteBuffer measure;
-
-        return new Measurement(null, null);
-    }
-
-    protected final void write(long p1, long p2) {
+    @Override
+    final void write(long p1, long p2) {
         BP[] as;
         int m;
         BP a;
@@ -77,6 +71,42 @@ abstract class CHMeter implements Meter {
                     (a = as[getProbe() & m]) == null ||
                     !(uncontended = a.casPutNext(p1, p2)))
                 longWrite(p1, p2, uncontended);
+        }
+    }
+
+    @Override
+    void retain(String name, Tag[] tags, Cursor cursor) {
+        long[] al = new long[2];
+
+        // read base
+        compactAndConsume(name, tags, cursor, bp, al);
+
+        // read nodes
+        BP[] cbps = bps;
+        BP cbp;
+        if (cbps != null) {
+            for (int i = 0; i < cbps.length; ++i) {
+                if ((cbp = cbps[i]) != null) {
+                    compactAndConsume(name, tags, cursor, cbp, al);
+                }
+            }
+        }
+    }
+
+    private void compactAndConsume(String name, Tag[] tags, Cursor cursor, BP bp, long[] al) {
+        al[0] = al[1] = 0;
+        // resize and copy data al[1] data to al[0] address
+        while (bp.pointer > 0 && !bp.compact(al)) ;
+
+        // have data
+        if (al[1] > 0) {
+            try {
+                for (long i = 0; i < al[1]; i += LLS) {
+                    cursor.consume(name, tags, U.getLong(al[0] + i), U.getLong(al[0] + i + Long.BYTES));
+                }
+            } finally {
+                U.freeMemory(al[0]);
+            }
         }
     }
 
@@ -174,6 +204,7 @@ abstract class CHMeter implements Meter {
 
     /**
      * Doesn't work without -XX:-RestrictContended JVM Flag
+     * And doesn't work in j9
      */
     @sun.misc.Contended
     static class BP {
@@ -194,18 +225,18 @@ abstract class CHMeter implements Meter {
             }
         }
 
-        volatile long address;
-        volatile long length;
-        volatile long pointer;
-        volatile int lock;
+        private volatile long address;
+        private volatile long length;
+        private volatile long pointer;
+        private volatile int lock;
 
         BP(long address, long length) {
             this.address = address;
             this.length = length;
         }
 
+        // this cas is bottleneck, and currently don't know how do it faster
         boolean casPutNext(long p1, long p2) {
-            // should be fast, because uncollided previously
             if (U.compareAndSwapInt(this, lockOffset, 0, 1)) {
                 // resize if need
                 if (pointer + LLS >= length) {
@@ -226,16 +257,19 @@ abstract class CHMeter implements Meter {
         }
 
         boolean compact(long[] copied) {
-            if (U.compareAndSwapInt(this, lockOffset, 0, 1)
-                    && pointer > 0) {
+            if (pointer > 0 && U.compareAndSwapInt(this, lockOffset, 0, 1)) {
                 long copyLength = pointer;
                 long copyAddr = U.allocateMemory(copyLength);
+
                 U.copyMemory(address, copyAddr, copyLength);
+                // try to decrease meter memory by one on every reading
                 address = U.reallocateMemory(address, Math.max(RESIZE_STEP, length - RESIZE_STEP));
                 pointer = 0;
 
                 copied[0] = copyAddr;
                 copied[1] = copyLength;
+
+                lock = 0;
                 return true;
             }
 

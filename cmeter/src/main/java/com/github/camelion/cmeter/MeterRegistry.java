@@ -23,13 +23,14 @@ package com.github.camelion.cmeter;
 public class MeterRegistry {
 
     /**
-     * Creates timer that provides api for recording, or measuring execution of some code
+     * Creates verbose timer that provides api for recording, or measuring execution of some code
+     * Verbose timer registers all executions in storage
      *
      * @param name
      * @param tags
      * @return
      */
-    public Timer timer(String name, Tag... tags) {
-        return MetricHouse.registerMeter(new CHTimer(name, tags));
+    public Timer verboseTimer(String name, Tag... tags) {
+        return MetricHouse.registerMeter(new VerboseTimer(name, tags));
     }
 }

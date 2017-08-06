@@ -23,11 +23,11 @@ import java.nio.ByteBuffer;
  * @since 26.07.17
  */
 public final class Measurement {
-    private final Meter meter;
+    private final Store store;
     private final ByteBuffer measure;
 
-    public Measurement(Meter meter, ByteBuffer measure) {
-        this.meter = meter;
+    public Measurement(Store store, ByteBuffer measure) {
+        this.store = store;
         this.measure = measure;
     }
 }
