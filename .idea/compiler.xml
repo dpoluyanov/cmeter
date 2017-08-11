@@ -2,9 +2,12 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
-      <module name="cmeter_jmh" target="1.9" />
-      <module name="cmeter_main" target="1.9" />
-      <module name="cmeter_test" target="1.9" />
+      <module name="cmeter-clickhouse-exporter_main" target="1.8" />
+      <module name="cmeter-clickhouse-exporter_sample" target="1.8" />
+      <module name="cmeter-clickhouse-exporter_test" target="1.8" />
+      <module name="cmeter_jmh" target="1.8" />
+      <module name="cmeter_main" target="1.8" />
+      <module name="cmeter_test" target="1.8" />
       <module name="micrometer-clickhouse-exporter_main" target="1.8" />
       <module name="micrometer-clickhouse-exporter_test" target="1.8" />
       <module name="micrometer-clickhouse-spring-starter_main" target="1.8" />

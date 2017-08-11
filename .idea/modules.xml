@@ -3,20 +3,14 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter.iml" group="cmeter" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter.iml" group="cmeter-clickhouse-exporter" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter_main.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter_main.iml" group="cmeter-clickhouse-exporter" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter_sample.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter_sample.iml" group="cmeter-clickhouse-exporter" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter_test.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter-clickhouse-exporter/cmeter-clickhouse-exporter_test.iml" group="cmeter-clickhouse-exporter" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter/cmeter_jmh.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter/cmeter_jmh.iml" group="cmeter" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter/cmeter_main.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter/cmeter_main.iml" group="cmeter" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmeter/cmeter_test.iml" filepath="$PROJECT_DIR$/.idea/modules/cmeter/cmeter_test.iml" group="cmeter" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-exporter.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-exporter.iml" group="micrometer-clickhouse-exporter" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-exporter/micrometer-clickhouse-exporter_main.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-exporter/micrometer-clickhouse-exporter_main.iml" group="micrometer-clickhouse-exporter" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-exporter/micrometer-clickhouse-exporter_test.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-exporter/micrometer-clickhouse-exporter_test.iml" group="micrometer-clickhouse-exporter" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring.iml" group="micrometer-clickhouse-spring" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring_main.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring_main.iml" group="micrometer-clickhouse-spring" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring_samples.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring_samples.iml" group="micrometer-clickhouse-spring" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring_test.iml" filepath="$PROJECT_DIR$/.idea/modules/micrometer-clickhouse-spring/micrometer-clickhouse-spring_test.iml" group="micrometer-clickhouse-spring" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_jmh.iml" filepath="$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_jmh.iml" group="micrometer-core" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_main.iml" filepath="$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_main.iml" group="micrometer-core" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_samples.iml" filepath="$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_samples.iml" group="micrometer-core" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_test.iml" filepath="$PROJECT_DIR$/.idea/modules/633207771/micrometer-core_test.iml" group="micrometer-core" />
       <module fileurl="file://$PROJECT_DIR$/spring-clickhouse-metrics.iml" filepath="$PROJECT_DIR$/spring-clickhouse-metrics.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/633207771/spring-metrics-micrometer-core.iml" filepath="$PROJECT_DIR$/.idea/modules/633207771/spring-metrics-micrometer-core.iml" group="micrometer-core" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-913690807/spring-metrics-micrometer-spring.iml" filepath="$PROJECT_DIR$/.idea/modules/-913690807/spring-metrics-micrometer-spring.iml" group="micrometer-spring" />
