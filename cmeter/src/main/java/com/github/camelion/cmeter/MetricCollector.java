@@ -18,16 +18,10 @@ package com.github.camelion.cmeter;
 
 /**
  * @author Camelion
- * @since 25.07.17
+ * @since 09.08.17
  */
-abstract class Store {
-    abstract void write(long timestamp, long value);
-
-    /**
-     * Name and tags passed through meters
-     *
-     * @param meterId
-     * @param cursor  passed cursor for given meter
-     */
-    abstract void retain(MeterId meterId, Cursor cursor);
+public final class MetricCollector {
+    public void obtainMetrics(Cursor cursor) {
+        MetricHouse.retain(cursor);
+    }
 }

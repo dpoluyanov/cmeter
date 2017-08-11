@@ -17,40 +17,28 @@
 package com.github.camelion.cmeter;
 
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Camelion
  * @since 25.07.17
- * <p>
- * Every buffer stores 16 bytes chunks
- * where first 8 byte - timestamp in nanoseconds, next 8 bytes is long/double value of meter on given timestamp.
- * <p>
- * Have two memory regions. First is pre-allocated directBuffers for every meter,
- * that used for storing small amount of actual values.
- * Count of stored values per buffer can be calculated with BUFFER_SIZE/16.
- * Typically it is 256.
- * <p>
- * Second region - is completed directBuffers, that would be collected on next {@link #measurements()} call
- * and would be released after sending to backend storage (but actually drops after next garbage collection)
- * <p>
- * On {@link #measurements()} calling, size of off-heap memory can grow up to 2x of designed size,
- * because all directBuffers recreated with empty size
  */
 final class MetricHouse {
-    private final static List<Meter> meters = new ArrayList<>();
+    private final static List<Meter> meters = new CopyOnWriteArrayList<>();
 
-    static synchronized <T extends Meter> T registerMeter(T meter) {
+    static <T extends Meter> T registerMeter(T meter) {
         meters.add(meter);
         return meter;
     }
 
     /**
      * Todo:
-     * 1) Special off-heap storage for Java 9,
+     * 1) Special off-heap storage for Java 9
      * 2) Heap storage
-     * 3) Some switch logic between them (per property based, or per meter)
+     * 3) Java 8 uncontended J8_Store variant for case, where {@code @sun.mics.Contended} restricted in user code
+     * 4) Dig into J10 Vector instructions and value types (Panama and Valhalla)
+     * 5) Some switch logic between them (per property based, or per meter)
      *
      * @return store for measurements
      */
@@ -59,15 +47,12 @@ final class MetricHouse {
     }
 
     /**
-     * Probably slow reading, but it is rare, and that's normal
+     * Probably slow reading, but reading is rare in time, and that's normal.
+     * May be can read in more threads but need to deal with {@code Cursor} consumers
      *
      * @param cursor metrics acceptor, that consumes id and values
      */
-    static synchronized void retain(Cursor cursor) {
+    static void retain(Cursor cursor) {
         meters.forEach(m -> m.retain(cursor));
-        // TODO Need cleaner for garbage collected metrics
-        // currently it lead to off-heap memory leak
-        // but it's not problem,
-        // because in this time there are no way to deregister meter
     }
 }

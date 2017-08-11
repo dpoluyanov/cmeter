@@ -1,27 +1,45 @@
-apply plugin: 'me.champeau.gradle.jmh'
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:3.2.0"
+    }
+}
+
+
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: "io.spring.dependency-management"
+apply plugin: 'nebula.facet'
+apply plugin: "nebula.optional-base"
 
-sourceCompatibility = 1.8
-group = "com.github.camelion"
-
-jar {
-    baseName = 'cmeter'
+facets {
+    sample
 }
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    jmh 'org.openjdk.jmh:jmh-core:latest.release'
-    jmh 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
+sourceCompatibility = 1.8
+group = "com.github.camelion"
+
+jar {
+    baseName = 'cmeter-clickhouse-exporter'
 }
 
-jmh {
-    jmhVersion = '1.19'
-    duplicateClassesStrategy = 'warn'
+dependencies {
+    compile project(":cmeter")
+
+    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.25'
+    compile "org.springframework.boot:spring-boot-autoconfigure", optional
+
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor"
 }
 
 task javadocJar(type: Jar) {
@@ -42,6 +60,12 @@ signing {
     sign configurations.archives
 }
 
+dependencyManagement {
+    imports {
+        mavenBom 'io.spring.platform:platform-bom:Cairo-BUILD-SNAPSHOT'
+    }
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -56,9 +80,9 @@ uploadArchives {
             }
 
             pom.project {
-                name 'CMeter'
+                name 'CMeter ClickHouse Exporter'
                 packaging 'jar'
-                description 'An artifact that provides high-efficient measurements engine for Java applications'
+                description 'An artifact that provides ability to export metrics from CMeter to ClickHouse storage'
                 url 'https://github.com/Camelion/cmeter'
 
                 scm {

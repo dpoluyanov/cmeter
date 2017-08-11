@@ -16,22 +16,63 @@
 
 package com.github.camelion.cmeter;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 /**
  * @author Camelion
  * @since 24.07.17
+ * timestamp stored in milliseconds, value stored in nanoseconds
  */
 public interface Timer extends Meter {
-    default void record(long timestamp, long value, TimeUnit unit) {
-        record(timestamp, TimeUnit.NANOSECONDS.convert(value, unit));
+
+    default <T> Supplier<T> wrap(Supplier<T> supplier) {
+        return () -> record(supplier);
+    }
+
+    default <T> T record(Supplier<T> supplier) {
+        long start = Clock.SYSTEM.monotonicTime();
+        try {
+            return supplier.get();
+        } finally {
+            long end = Clock.SYSTEM.monotonicTime();
+            record(Clock.SYSTEM.wallTime(), end - start);
+        }
     }
 
     /**
-     * Writes nanosecond to timer
+     * Writes value to timer
      *
-     * @param timestamp the time point for storing metric (in seconds)
-     * @param value     amount of ns
+     * @param timestamp the time point for storing metric in milliseconds
+     * @param value     amount of ms
      */
     void record(long timestamp, long value);
+
+    default <V> Callable<V> wrap(Callable<V> callable) throws Exception {
+        return () -> record(callable);
+    }
+
+    default <V> V record(Callable<V> callable) throws Exception {
+        long start = Clock.SYSTEM.monotonicTime();
+        try {
+            return callable.call();
+        } finally {
+            long end = Clock.SYSTEM.monotonicTime();
+            record(Clock.SYSTEM.wallTime(), end - start);
+        }
+    }
+
+    default Runnable wrap(Runnable run) {
+        return () -> record(run);
+    }
+
+    default void record(Runnable runnable) {
+        long start = Clock.SYSTEM.monotonicTime();
+        try {
+            runnable.run();
+        } finally {
+            long end = Clock.SYSTEM.monotonicTime();
+            record(Clock.SYSTEM.wallTime(), end - start);
+        }
+    }
 }

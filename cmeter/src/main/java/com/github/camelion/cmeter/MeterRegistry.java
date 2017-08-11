@@ -20,17 +20,29 @@ package com.github.camelion.cmeter;
  * @author Camelion
  * @since 26.07.17
  */
-public class MeterRegistry {
+public final class MeterRegistry {
 
     /**
      * Creates verbose timer that provides api for recording, or measuring execution of some code
      * Verbose timer registers all executions in storage
      *
-     * @param name
-     * @param tags
-     * @return
+     * @param name metric name
+     * @param tags zero or more tags for this metric
+     * @return new verbose timer instance
      */
-    public Timer verboseTimer(String name, Tag... tags) {
-        return MetricHouse.registerMeter(new VerboseTimer(name, tags));
+    public static Timer verboseTimer(String name, Tag... tags) {
+        return MetricHouse.registerMeter(new VerboseTimer(new MeterId(name, tags)));
+    }
+
+    /**
+     * Creates verbose counter that stores every increment
+     * Verbose timer registers all executions in storage
+     *
+     * @param name metric name
+     * @param tags zero or more tags for this metric
+     * @return new verbose counter instance
+     */
+    public static Counter verboseCounter(String name, Tag... tags) {
+        return MetricHouse.registerMeter(new VerboseCounter(new MeterId(name, tags)));
     }
 }

@@ -18,10 +18,16 @@ package com.github.camelion.cmeter;
 
 /**
  * @author Camelion
- * @since 24.07.17
+ * @since 08.08.17
  */
-public interface Clock {
-    long monotonicTime();
+public final class Clock {
+    public static Clock SYSTEM = new Clock();
 
-    Clock SYSTEM = System::nanoTime;
+    public long wallTime() {
+        return System.currentTimeMillis();
+    }
+
+    public long monotonicTime() {
+        return System.nanoTime();
+    }
 }

@@ -23,12 +23,29 @@ import java.util.Objects;
  * @since 24.07.17
  */
 public final class Tag {
-    private String key;
-    private String value;
+    private final String key;
+    private final String value;
 
     private Tag(String key, String value) {
         this.key = key;
         this.value = value;
+    }
+
+    public static Tag of(String key, String value) {
+        return new Tag(key, value);
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value);
     }
 
     @Override
@@ -38,14 +55,5 @@ public final class Tag {
         Tag tag = (Tag) o;
         return Objects.equals(key, tag.key) &&
                 Objects.equals(value, tag.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, value);
-    }
-
-    public static Tag of(String key, String value) {
-        return new Tag(key, value);
     }
 }

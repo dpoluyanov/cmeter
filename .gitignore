@@ -63,3 +63,6 @@ fabric.properties
 
 gradle.properties
 docker/grafana/volume/var/lib/grafana/sessions
+
+cmeter-clickhouse-exporter/build
+cmeter-clickhouse-exporter/out

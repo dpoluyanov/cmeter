@@ -20,17 +20,24 @@ import java.util.Objects;
 
 /**
  * @author Camelion
- * @since 24.07.17
- * Registers all executions in backed store
- * It's useful when u need accurate raw measurements in storage
+ * @since 07.08.17
+ * Stores every increment with it timestamp in storage
  */
-final class VerboseTimer implements Timer {
-    private final MeterId meterId;
+final class VerboseCounter implements Counter {
     private final Store store;
+    private final MeterId meterId;
 
-    VerboseTimer(MeterId meterId) {
+    VerboseCounter(MeterId meterId) {
         this.meterId = meterId;
         this.store = MetricHouse.createStore();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VerboseCounter that = (VerboseCounter) o;
+        return Objects.equals(meterId, that.meterId);
     }
 
     @Override
@@ -38,17 +45,18 @@ final class VerboseTimer implements Timer {
         return Objects.hash(meterId);
     }
 
+    /**
+     * Stores every timestamp/increment amount pair in store.
+     * total sum should be calculated later on backend storage (with different slices)
+     *
+     * @param timestamp time mark of incrementation
+     * @param amount    value for increase
+     */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VerboseTimer that = (VerboseTimer) o;
-        return Objects.equals(meterId, that.meterId);
-    }
-
-    @Override
-    public void record(long timestamp, long value) {
-        store.write(timestamp, value);
+    public void increment(long timestamp, long amount) {
+        if (amount < 0)
+            throw new IllegalArgumentException("Amount should be positive");
+        store.write(timestamp, amount);
     }
 
     @Override

@@ -20,6 +20,6 @@ package com.github.camelion.cmeter;
  * @author Camelion
  * @since 06.08.17
  */
-interface Cursor {
-    void consume(String name, Tag[] tags, long timestamp, long value);
+public interface Cursor {
+    void consume(MeterId meterId, long timestamp, long value);
 }
