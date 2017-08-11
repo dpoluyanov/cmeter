@@ -73,7 +73,7 @@ public final class ClickHouseExporter {
                         " ),\n" +
                         " value Int64\n" +
                         ") ENGINE = MergeTree(partition, " +
-                        "(timestamp, metric, tags.key, tags.value), 8192)");
+                        "(timestamp, metric), 8192)");
 
                 LOG.info("Created table {} for application metrics", exporterConfig.getTable());
             }
