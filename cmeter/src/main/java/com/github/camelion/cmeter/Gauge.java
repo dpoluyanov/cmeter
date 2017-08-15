@@ -18,18 +18,18 @@ package com.github.camelion.cmeter;
 
 /**
  * @author Camelion
- * @since 25.07.17
+ * @since 14.08.17
  */
-abstract class Store {
-    abstract void write(long timestamp, long value);
+public interface Gauge extends Meter {
+    default void measure() {
+        long timestamp = Clock.SYSTEM.wallTime();
 
-    abstract void write(long timestamp, double value);
+        Double val;
+        if ((val = getValue()) != null)
+            record(timestamp, val);
+    }
 
-    /**
-     * Name and tags passed through meters
-     *
-     * @param meterId
-     * @param cursor  passed cursor for given meter
-     */
-    abstract void retain(MeterId meterId, Cursor cursor);
+    Double getValue();
+
+    void record(long timestamp, double value);
 }

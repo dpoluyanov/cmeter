@@ -68,6 +68,7 @@ final class J8_Store extends Store {
 
     @Override
     final void write(long p1, long p2) {
+        p2 = Double.doubleToLongBits(p2);
         BP[] as;
         int m;
         BP a;
@@ -78,6 +79,11 @@ final class J8_Store extends Store {
                     !(uncontended = a.casPutNext(p1, p2)))
                 longWrite(p1, p2, uncontended);
         }
+    }
+
+    @Override
+    void write(long p1, double p2) {
+        write(p1, Double.doubleToLongBits(p2));
     }
 
     @Override
@@ -101,7 +107,7 @@ final class J8_Store extends Store {
 
     private void compactAndConsume(MeterId meterId, Cursor cursor, BP inbp, long[] al) {
         al[0] = al[1] = 0;
-        // resize and copy data al[1] data to al[0] address
+        // resize and copy al[1] amount of data to al[0] address
         while (inbp.pointer > 0 && !inbp.compact(al)) ;
 
         // have data

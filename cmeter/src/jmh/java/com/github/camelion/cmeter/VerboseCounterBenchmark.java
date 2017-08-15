@@ -65,7 +65,7 @@ public class VerboseCounterBenchmark {
 
     @Setup
     public void setUp() {
-        meter = new VerboseCounter("test.counter", Tags.empty());
+        meter = new VerboseCounter(new MeterId("test.counter", new Tag[0]));
         timestamp = System.nanoTime();
         value = 10L;
     }
@@ -77,15 +77,12 @@ public class VerboseCounterBenchmark {
     public void tearDown() {
         LongAdder counter = new LongAdder();
         // cleanup
-        meter.retain((name, tags, timestamp, value) -> {
-            counter.increment();
-        });
+        meter.retain((meterId, timestamp, value) -> counter.increment());
 
         // cheat cleanup to initial size
         long cnt = counter.sum();
         for (int i = 0; i < cnt / 4096; i++)
-            meter.retain((name, tags, timestamp, value) -> {
-            });
+            meter.retain((meterId, timestamp, value) -> counter.increment());
 
         System.out.println("processed: " + counter.sum() + " measures");
     }

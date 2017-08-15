@@ -50,7 +50,7 @@ public final class ClickHouseExporter {
 
             @Override
             public Thread newThread(Runnable r) {
-                String name = "cmeter-ch-exporter-" + threadNum.getAndIncrement();
+                String name = "CMeter-CH-Exporter-" + threadNum.getAndIncrement();
                 return new Thread(Thread.currentThread().getThreadGroup(), r, name);
             }
         });
@@ -71,9 +71,8 @@ public final class ClickHouseExporter {
                         "   key String,\n" +
                         "   value String\n" +
                         " ),\n" +
-                        " value Int64\n" +
-                        ") ENGINE = MergeTree(partition, " +
-                        "(timestamp, metric), 8192)");
+                        " value Float64\n" +
+                        ") ENGINE = MergeTree(partition, (timestamp, metric), 8192)");
 
                 LOG.info("Created table {} for application metrics", exporterConfig.getTable());
             }

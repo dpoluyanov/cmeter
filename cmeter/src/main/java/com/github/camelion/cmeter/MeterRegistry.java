@@ -16,11 +16,29 @@
 
 package com.github.camelion.cmeter;
 
+import java.lang.ref.WeakReference;
+import java.time.Duration;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.ToDoubleFunction;
+
 /**
  * @author Camelion
  * @since 26.07.17
  */
 public final class MeterRegistry {
+    private static final ScheduledExecutorService STEP_METER_EXECUTORS =
+            Executors.newScheduledThreadPool(
+                    Runtime.getRuntime().availableProcessors(),
+                    new ThreadFactory() {
+                        final AtomicInteger threadNum = new AtomicInteger(1);
+
+                        @Override
+                        public Thread newThread(Runnable r) {
+                            String name = "CMeter-Step-Meter-" + threadNum.getAndIncrement();
+                            return new Thread(Thread.currentThread().getThreadGroup(), r, name);
+                        }
+                    });
 
     /**
      * Creates verbose timer that provides api for recording, or measuring execution of some code
@@ -36,7 +54,7 @@ public final class MeterRegistry {
 
     /**
      * Creates verbose counter that stores every increment
-     * Verbose timer registers all executions in storage
+     * Verbose counter registers all increments delta in storage
      *
      * @param name metric name
      * @param tags zero or more tags for this metric
@@ -44,5 +62,30 @@ public final class MeterRegistry {
      */
     public static Counter verboseCounter(String name, Tag... tags) {
         return MetricHouse.registerMeter(new VerboseCounter(new MeterId(name, tags)));
+    }
+
+    /**
+     * TODO: Meter should be unregistered as soon, as week reference expired
+     *
+     * @param watched  observed value
+     * @param interval measure interval
+     * @param asDouble function, that converts {@code watched } object to measurement
+     * @param name     metric name
+     * @param tags     zero or more tags for this metric
+     * @param <T>      any type of watched object
+     * @return new gauge measure with {@code interval} measure rate
+     */
+    public static <T> Gauge stepGauge(T watched, Duration interval, ToDoubleFunction<T> asDouble,
+                                      String name, Tag... tags) {
+        StepGauge<T> stepGauge = MetricHouse.registerMeter(new StepGauge<>(new MeterId(name, tags),
+                new WeakReference<>(watched), asDouble));
+
+        // todo add canncelation, when weakreference is released
+        ScheduledFuture<?> scheduledFuture = STEP_METER_EXECUTORS.scheduleAtFixedRate(
+                stepGauge::measure,
+                interval.toMillis(), interval.toMillis(),
+                TimeUnit.MILLISECONDS);
+
+        return stepGauge;
     }
 }

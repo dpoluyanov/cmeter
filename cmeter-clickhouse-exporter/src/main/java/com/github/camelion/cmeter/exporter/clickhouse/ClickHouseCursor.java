@@ -59,7 +59,7 @@ final class ClickHouseCursor implements Cursor {
                 writeString(stream, v);
             }
 
-            writeLong(stream, value);
+            writeDouble(stream, value);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +72,8 @@ final class ClickHouseCursor implements Cursor {
         }
     }
 
-    private static void writeLong(ClickHouseRowBinaryStream stream, long l) throws IOException {
+    // double already in long bits
+    private static void writeDouble(ClickHouseRowBinaryStream stream, long l) throws IOException {
         // write `value` as long in LE (workaround CH-JDBC-GUAVA long bug)
         stream.writeInt8((byte) l);
         stream.writeInt8((byte) (l >> 8));
